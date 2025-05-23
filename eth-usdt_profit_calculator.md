@@ -128,31 +128,52 @@ The app features a clean, iOS-native inspired UI optimized for both mobile and d
     #chartContainer {
         height: 300px;
         margin-top: 20px;
-        position: relative; /* For positioning the live price display */
+        position: relative; /* For positioning child elements */
     }
     #livePriceDisplayContainer {
         position: absolute;
-        top: 10px; /* Adjust as needed */
-        right: 10px; /* Adjust as needed */
+        top: 10px; 
+        right: 10px; 
         font-size: 13px;
         font-weight: bold;
-        color: #555; /* Label color */
-        z-index: 10; /* To be above the chart canvas */
-        background-color: rgba(255, 255, 255, 0.8); /* Optional: slight background for readability */
+        color: #555; 
+        z-index: 10; 
+        background-color: rgba(255, 255, 255, 0.8); 
         padding: 3px 6px;
         border-radius: 4px;
     }
     #livePriceValue {
-        color: #627eea; /* ETH Blue for the value */
+        color: #627eea; 
     }
     .price-bounce {
         animation: priceBounceAnimation 0.3s ease-out;
-        display: inline-block; /* Important for transform to work correctly */
+        display: inline-block; 
     }
     @keyframes priceBounceAnimation {
         0% { transform: scale(1); }
         50% { transform: scale(1.25); }
         100% { transform: scale(1); }
+    }
+    #resetChartButton { /* Style for the reset button */
+        position: absolute;
+        bottom: 10px; 
+        right: 10px;  
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        background-color: #6c757d; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 10; 
+        transition: background-color 0.2s ease;
+    }
+    #resetChartButton:hover {
+        background-color: #5a6268;
+    }
+    #resetChartButton:active {
+        background-color: #4e555b;
     }
   </style>
 </head>
@@ -164,7 +185,7 @@ The app features a clean, iOS-native inspired UI optimized for both mobile and d
   <div class="switch-group">
     <label>Use Real-Time Price For BUYING</label>
     <label class="switch">
-      <input type="checkbox" id="useRealTimeBuy"> <!-- Default unchecked -->
+      <input type="checkbox" id="useRealTimeBuy">
       <span class="slider"></span>
     </label>
   </div>
@@ -176,7 +197,7 @@ The app features a clean, iOS-native inspired UI optimized for both mobile and d
   <div class="switch-group">
     <label>Use Real-Time Price For SELLING</label>
     <label class="switch">
-      <input type="checkbox" id="useRealTimeSell" checked> <!-- Default checked -->
+      <input type="checkbox" id="useRealTimeSell" checked>
       <span class="slider"></span>
     </label>
   </div>
@@ -187,7 +208,7 @@ The app features a clean, iOS-native inspired UI optimized for both mobile and d
 
   <div class="input-group">
     <label>USDT On Hand</label>
-    <input type="number" id="availableUSDT" value="15440.95427" step="0.00001">
+    <input type="number" id="availableUSDT" value="15719.20" step="0.00001">
   </div>
 
   <div class="input-group">
@@ -215,10 +236,11 @@ The app features a clean, iOS-native inspired UI optimized for both mobile and d
       <span id="livePriceValue">--.--</span>
   </div>
   <canvas id="profitChart"></canvas>
+  <button id="resetChartButton">Reset Chart</button> <!-- ADDED RESET BUTTON HTML -->
 </div>
 
 <script>
-let ethPrice = null; // Changed from btcPrice
+let ethPrice = null;
 let profitChart;
 let chartDataPoints = [];
 let latestProfitUSDTForChart = 0;
@@ -228,14 +250,14 @@ const MAX_CHART_DATAPOINTS = 3000;
 const CHART_UPDATE_INTERVAL = 100;  
 const PRICE_FETCH_INTERVAL = 100;   
 
-let previousEthPriceForAnimation = null; // Changed for ETH
+let previousEthPriceForAnimation = null;
 
-async function fetchETHPrice() { // Renamed function
+async function fetchETHPrice() {
   try {
-    const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'); // API for ETHUSDT
+    const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT');
     if (!res.ok) throw new Error('API Error: ' + res.status);
     const data = await res.json();
-    const newEthPrice = parseFloat(data.price); // Changed to newEthPrice
+    const newEthPrice = parseFloat(data.price);
 
     const livePriceValueEl = document.getElementById('livePriceValue');
 
@@ -247,10 +269,10 @@ async function fetchETHPrice() { // Renamed function
         }
     }
     if (newEthPrice !== null) {
-        previousEthPriceForAnimation = newEthPrice; // Changed for ETH
+        previousEthPriceForAnimation = newEthPrice;
     }
 
-    ethPrice = newEthPrice; // Update global ethPrice
+    ethPrice = newEthPrice;
 
     if (livePriceValueEl) {
         if (ethPrice !== null) {
@@ -261,15 +283,15 @@ async function fetchETHPrice() { // Renamed function
     }
 
     if (!initialPriceFetchedAndSet && ethPrice !== null) {
-        document.getElementById('manualETHPriceBuy').value = ethPrice.toFixed(2); // ID for ETH
-        document.getElementById('manualETHPriceSell').value = ethPrice.toFixed(2); // ID for ETH
+        document.getElementById('manualETHPriceBuy').value = ethPrice.toFixed(2);
+        document.getElementById('manualETHPriceSell').value = ethPrice.toFixed(2);
         initialPriceFetchedAndSet = true;
     }
     
     calculate(); 
   } catch (error) {
-    console.error("Error fetching ETH price:", error); // Error message for ETH
-    document.getElementById('results').innerHTML = "⚠️ Cannot fetch ETH price."; // Error message for ETH
+    console.error("Error fetching ETH price:", error);
+    document.getElementById('results').innerHTML = "⚠️ Cannot fetch ETH price.";
     const livePriceValueEl = document.getElementById('livePriceValue');
     if (livePriceValueEl) livePriceValueEl.textContent = 'Error';
   }
@@ -279,11 +301,11 @@ function row(label, value) {
   return `<div class="row"><div class="label">${label}</div><div class="value">${value}</div></div>`;
 }
 
-function getCurrentETHPrice(isBuy) { // Renamed function
-  const manualPriceEl = isBuy ? document.getElementById('manualETHPriceBuy') : document.getElementById('manualETHPriceSell'); // IDs for ETH
+function getCurrentETHPrice(isBuy) {
+  const manualPriceEl = isBuy ? document.getElementById('manualETHPriceBuy') : document.getElementById('manualETHPriceSell');
   const useRealTimeEl = isBuy ? document.getElementById('useRealTimeBuy') : document.getElementById('useRealTimeSell');
 
-  if (useRealTimeEl.checked && ethPrice !== null) { // Use global ethPrice
+  if (useRealTimeEl.checked && ethPrice !== null) {
     return ethPrice;
   }
   return parseFloat(manualPriceEl.value) || 0;
@@ -294,38 +316,38 @@ function calculate() {
   const buyFeePercent = parseFloat(document.getElementById('buyFeePercent').value) || 0;
   const sellFeePercent = parseFloat(document.getElementById('sellFeePercent').value) || 0;
   
-  if (document.getElementById('useRealTimeBuy').checked && ethPrice !== null) { // Use global ethPrice
-      document.getElementById('manualETHPriceBuy').value = ethPrice.toFixed(2); // ID for ETH
+  if (document.getElementById('useRealTimeBuy').checked && ethPrice !== null) {
+      document.getElementById('manualETHPriceBuy').value = ethPrice.toFixed(2);
   }
-  if (document.getElementById('useRealTimeSell').checked && ethPrice !== null) { // Use global ethPrice
-      document.getElementById('manualETHPriceSell').value = ethPrice.toFixed(2); // ID for ETH
+  if (document.getElementById('useRealTimeSell').checked && ethPrice !== null) {
+      document.getElementById('manualETHPriceSell').value = ethPrice.toFixed(2);
   }
 
-  const currentBuyETH = getCurrentETHPrice(true); // Changed to ETH
-  const currentSellETH = getCurrentETHPrice(false); // Changed to ETH
+  const currentBuyETH = getCurrentETHPrice(true);
+  const currentSellETH = getCurrentETHPrice(false);
 
   let waitingMessage = "";
-  if ((document.getElementById('useRealTimeBuy').checked || document.getElementById('useRealTimeSell').checked) && ethPrice === null && !initialPriceFetchedAndSet) { // Use global ethPrice
-      waitingMessage = "Waiting ETH Price..."; // Message for ETH
+  if ((document.getElementById('useRealTimeBuy').checked || document.getElementById('useRealTimeSell').checked) && ethPrice === null && !initialPriceFetchedAndSet) {
+      waitingMessage = "Waiting ETH Price...";
   }
   
   if (waitingMessage) {
       document.getElementById('results').innerHTML = waitingMessage;
-      if ((document.getElementById('useRealTimeBuy').checked && currentBuyETH === 0) || // currentBuyETH
-          (document.getElementById('useRealTimeSell').checked && currentSellETH === 0)) { // currentSellETH
+      if ((document.getElementById('useRealTimeBuy').checked && currentBuyETH === 0) ||
+          (document.getElementById('useRealTimeSell').checked && currentSellETH === 0)) {
           latestProfitUSDTForChart = 0; 
           return; 
       }
   }
 
   const buyFeeUSDT = availableUSDT * (buyFeePercent / 100);
-  const buyFeeETH = currentBuyETH > 0 ? buyFeeUSDT / currentBuyETH : 0; // buyFeeETH, currentBuyETH
+  const buyFeeETH = currentBuyETH > 0 ? buyFeeUSDT / currentBuyETH : 0;
   const usdtAfterBuyFee = availableUSDT - buyFeeUSDT;
-  const maxBoughtETH = currentBuyETH > 0 ? usdtAfterBuyFee / currentBuyETH : 0; // maxBoughtETH, currentBuyETH
+  const maxBoughtETH = currentBuyETH > 0 ? usdtAfterBuyFee / currentBuyETH : 0;
   
-  const ethOnHandSell = maxBoughtETH * currentSellETH; // ethOnHandSell, maxBoughtETH, currentSellETH
+  const ethOnHandSell = maxBoughtETH * currentSellETH;
   const sellFeeUSDT = ethOnHandSell * (sellFeePercent / 100);
-  const sellFeeETH = currentSellETH > 0 ? sellFeeUSDT / currentSellETH : 0; // sellFeeETH, currentSellETH
+  const sellFeeETH = currentSellETH > 0 ? sellFeeUSDT / currentSellETH : 0;
   const finalUSDT = ethOnHandSell - sellFeeUSDT;
   
   let profitUSDT = 0;
@@ -361,7 +383,7 @@ function initChart() {
       datasets: [{
         label: 'Net Profit (USDT)',
         data: chartDataPoints,
-        borderColor: 'rgb(98, 126, 234)', // ETH Blue color
+        borderColor: 'rgb(98, 126, 234)',
         backgroundColor: 'transparent', 
         fill: false,                    
         tension: 0.2,
@@ -445,6 +467,16 @@ function updateChart() {
   profitChart.update('none'); 
 }
 
+// ADDED: Function to reset chart data
+function resetChartData() {
+  if (profitChart) {
+    chartDataPoints.length = 0; // Clear the data array
+    // Since profitChart.data.datasets[0].data refers to chartDataPoints,
+    // this modification is directly reflected.
+    profitChart.update('none'); // Update the chart immediately without animation
+  }
+}
+
 function attachEvents() {
   document.querySelectorAll('input[type="number"]').forEach(input => {
     input.addEventListener('input', calculate);
@@ -452,47 +484,53 @@ function attachEvents() {
 
   const useRealTimeBuyCheckbox = document.getElementById('useRealTimeBuy');
   const useRealTimeSellCheckbox = document.getElementById('useRealTimeSell');
-  const manualBuyInput = document.getElementById('manualETHPriceBuy'); // ID for ETH
-  const manualSellInput = document.getElementById('manualETHPriceSell'); // ID for ETH
+  const manualBuyInput = document.getElementById('manualETHPriceBuy');
+  const manualSellInput = document.getElementById('manualETHPriceSell');
 
   manualBuyInput.disabled = useRealTimeBuyCheckbox.checked; 
   manualSellInput.disabled = useRealTimeSellCheckbox.checked; 
 
   useRealTimeBuyCheckbox.addEventListener('change', function() {
     manualBuyInput.disabled = this.checked;
-    if (this.checked && ethPrice !== null) { // Use global ethPrice
+    if (this.checked && ethPrice !== null) {
       manualBuyInput.value = ethPrice.toFixed(2);
     } else if (this.checked && ethPrice === null && !initialPriceFetchedAndSet) { 
-        fetchETHPrice(); // Call fetchETHPrice
+        fetchETHPrice();
     }
     calculate();
   });
 
   useRealTimeSellCheckbox.addEventListener('change', function() {
     manualSellInput.disabled = this.checked;
-    if (this.checked && ethPrice !== null) { // Use global ethPrice
+    if (this.checked && ethPrice !== null) {
       manualSellInput.value = ethPrice.toFixed(2);
     } else if (this.checked && ethPrice === null && !initialPriceFetchedAndSet) {
-        fetchETHPrice(); // Call fetchETHPrice
+        fetchETHPrice();
     }
     calculate();
   });
+
+  // ADDED: Event listener for the reset button
+  const resetButton = document.getElementById('resetChartButton');
+  if (resetButton) {
+    resetButton.addEventListener('click', resetChartData);
+  }
 
   initChart(); 
   setInterval(updateChart, CHART_UPDATE_INTERVAL); 
 }
 
-fetchETHPrice(); // Initial call for ETH
+fetchETHPrice();
 attachEvents();  
 
 setInterval(() => {
-    fetchETHPrice(); // Fetch ETH price
+    fetchETHPrice();
 }, PRICE_FETCH_INTERVAL);
 
-document.getElementById('manualETHPriceBuy').addEventListener('input', function() { // ID for ETH
+document.getElementById('manualETHPriceBuy').addEventListener('input', function() {
     if (!document.getElementById('useRealTimeBuy').checked) calculate();
 });
-document.getElementById('manualETHPriceSell').addEventListener('input', function() { // ID for ETH
+document.getElementById('manualETHPriceSell').addEventListener('input', function() {
     if (!document.getElementById('useRealTimeSell').checked) calculate();
 });
 
